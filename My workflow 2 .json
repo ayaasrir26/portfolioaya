@@ -1,0 +1,212 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0a3b7ab6-06e0-4d71-9894-ca451a2587e5",
+      "name": "Telegram Trigger",
+      "webhookId": "eb76d8e2-86b0-405c-ab01-f1b7af296f67",
+      "credentials": {
+        "telegramApi": {
+          "id": "y0nT8FJTHsIpS5un",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "Vous êtes un assistant personnel qui m'aide à obtenir des informations personnelles pour la famille."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "53e264b8-8248-40e3-8855-40fd4d95994d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        116
+      ],
+      "id": "e244abc5-5440-48c6-95a6-aef4e0678b3d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "c4En5wAG9cyFMZlw",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "d8acd909-5fda-4a38-9f67-5c1a885bc7b4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1sXDYS2ce6Sew9XcqmrsYFUmSzDh31QaL9yoCY-Husgc",
+          "mode": "list",
+          "cachedResultName": "Feuille de calcul sans titre",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sXDYS2ce6Sew9XcqmrsYFUmSzDh31QaL9yoCY-Husgc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sXDYS2ce6Sew9XcqmrsYFUmSzDh31QaL9yoCY-Husgc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        208
+      ],
+      "id": "6fe2b70e-eac1-4be3-a92a-108bab25ba7c",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cX89BSGpxC2lEEDw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        32
+      ],
+      "id": "ac4b602e-ea52-4e3d-a667-d134eabdb7dd",
+      "name": "Send a text message",
+      "webhookId": "95e2011c-0463-4039-8c9a-7985b0f53eaa",
+      "credentials": {
+        "telegramApi": {
+          "id": "y0nT8FJTHsIpS5un",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "11806259-4dc2-4bd5-bb27-ab5c81c51df1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "693ce779f491fce6d4d54aa0d26275eb09ee33f54641eb9ff0b5d7b51f312dec"
+  },
+  "id": "INrzvAoZ7HPXQ6aH",
+  "tags": []
+}
